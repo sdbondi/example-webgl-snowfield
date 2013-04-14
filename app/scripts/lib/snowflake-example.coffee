@@ -6,6 +6,7 @@ namespace 'SF', (exports) ->
 			@cameraY = 0
 			@cameraZ = @cameraRadius
 			@particleSystemHeight = @options.height / 2
+			@pause = false
 
 			@parameters = 
 				opacity: 1.0
@@ -17,6 +18,8 @@ namespace 'SF', (exports) ->
 				height: @particleSystemHeight
 				speedH: 2
 				speedV: 2
+				pause: =>
+					@pause = !@pause
 
 			@initialize(@options)
 
@@ -70,7 +73,7 @@ namespace 'SF', (exports) ->
 			@controls.addColor(@parameters, 'color').onChange =>
 				@sysMaterial.uniforms.color.value.set(@parameters.color)
 
-			@controls.add(@parameters, 'height').min(0).max(@particleSystemHeight * 2.0).onChange =>
+			@controls.add(@parameters, 'height').min(1).max(@particleSystemHeight * 2.0).onChange =>
 				@sysMaterial.uniforms.height.value = @parameters.height
 
 			@controls.add(@parameters, 'snowDriftRadiusX').min(0).max(10).onChange =>
@@ -94,6 +97,8 @@ namespace 'SF', (exports) ->
 			@controls.add(@parameters, 'speedV').min(0.1).max(3).step(0.1).onChange =>
 				@sysMaterial.uniforms.speedV.value = @parameters.speedV
 
+			@controls.add(@parameters, 'pause')
+
 		attachUIEvents: =>
 			@element.addEventListener 'mousemove', (e) =>
 				mouseX = e.clientX
@@ -112,7 +117,7 @@ namespace 'SF', (exports) ->
 			window.requestAnimationFrame(@render)
 
 			# delta = @clock.getDelta()
-			elapsedTime = @clock.getElapsedTime()
+			elapsedTime = @lastElapsedTime = if @pause then @lastElapsedTime else @clock.getElapsedTime()
 
 			@particleSystem.material.uniforms.elapsedTime.value = elapsedTime * 10
 
